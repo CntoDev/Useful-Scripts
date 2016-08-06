@@ -27,3 +27,11 @@ Then paste the following to the code part:
     ["swap", "cnto_us_mat_gunner_pack", "cnto_flecktarn_b_kb_mediterranean"],
     ["swap", "cnto_us_mat_bearer_pack", "cnto_flecktarn_b_kb_mediterranean"]
 ] call a3ee_fnc_modifyLoadout;
+
+You can change "mediterranean" to one of
+ * desert
+ * forest
+ * jungle
+ * mediterranean
+ * snow
+and modify the individual pieces however required (ie. booniehat instead of combat helmet).
