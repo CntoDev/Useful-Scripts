@@ -1,0 +1,29 @@
+Place the A3EE -> Execute code module, check "Run on respawn".
+
+Then paste the following to the code part:
+
+[
+    ["swap", "rhs_uniform_cu_ucp", "cnto_flecktarn_u_mediterranean"],
+    ["swap", "rhsusf_iotv_ucp_squadleader", "cnto_flecktarn_v_h_mediterranean"],
+    ["swap", "rhsusf_iotv_ucp_medic", "cnto_flecktarn_v_mediterranean"],
+    ["swap", "rhsusf_iotv_ucp_grenadier", "cnto_flecktarn_v_h_mediterranean"],
+    ["swap", "rhsusf_iotv_ucp_saw", "cnto_flecktarn_v_s_mediterranean"],
+    ["swap", "rhsusf_iotv_ucp_teamleader", "cnto_flecktarn_v_h_mediterranean"],
+    ["swap", "rhsusf_iotv_ucp_rifleman", "cnto_flecktarn_v_mediterranean"],
+    ["swap", "rhsusf_ach_helmet_ucp", "cnto_flecktarn_h_c_mediterranean"],
+    ["swap", "rhsusf_ach_helmet_ESS_ucp", "cnto_flecktarn_h_c_mediterranean"],
+    ["swap", "rhsusf_ach_helmet_headset_ucp", "cnto_flecktarn_h_c_mediterranean"],
+    ["swap", "rhsusf_patrolcap_ucp", "cnto_flecktarn_h_beret"],
+    ["swap", "cnto_us_sq_sl_pack", "cnto_flecktarn_b_ap_mediterranean"],
+    ["swap", "cnto_us_ft_tl_pack", "cnto_flecktarn_b_ap_mediterranean"],
+    ["swap", "cnto_us_plt_co_pack", "cnto_flecktarn_b_ap_mediterranean"],
+    ["swap", "cnto_us_mmg_tl_pack", "cnto_flecktarn_b_ap_mediterranean"],
+    ["swap", "cnto_us_mmg_gunner_pack", "cnto_flecktarn_b_ap_mediterranean"],
+    ["swap", "cnto_us_veh_driver_pack", "cnto_flecktarn_b_ap_mediterranean"],
+    ["swap", "cnto_us_air_copilot_pack", "cnto_flecktarn_b_ap_mediterranean"],
+    ["swap", "cnto_us_sq_medic_pack", "cnto_flecktarn_b_kb_mediterranean"],
+    ["swap", "cnto_us_ft_aar_pack", "cnto_flecktarn_b_kb_mediterranean"],
+    ["swap", "cnto_us_mmg_bearer_pack", "cnto_flecktarn_b_kb_mediterranean"],
+    ["swap", "cnto_us_mat_gunner_pack", "cnto_flecktarn_b_kb_mediterranean"],
+    ["swap", "cnto_us_mat_bearer_pack", "cnto_flecktarn_b_kb_mediterranean"]
+] call a3ee_fnc_modifyLoadout;
