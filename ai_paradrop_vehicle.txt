@@ -1,0 +1,47 @@
+//Use: Drop the parts you want to use into trigger On Activation box(Without // and comments). Replace .txt in the filename with .sqf
+//
+//ambFlyby = [[13239.8,1939.17,347.588], [9166.79,5293.54,754.689], 600, "FULL", "RHS_C130J", WEST] call BIS_fnc_ambientFlyBy; - (Creates a C-130 that does a flyby. StartPos,EndPos,Height,Vehicle,Side)
+//0 = [] spawn {sleep 16; nul= [A, 600] execVM "ai_paradrop_vehicle.sqf";                                                                 - (Vehicle var name, Height)
+//A hideObject False;                                                                                                          - Vehicle is just raised to the height specified so you might want to hide it until you want to use it. This unhides it.
+//[playerSide,"HQ"] commandChat "Equipment delivered.";};                                                                      - Simple chat message to simulate HQ.
+
+
+if (!isServer) exitWith {};
+_tank = _this select 0;
+_height= _this select 1;
+
+_tank setPos
+[
+	getPos _tank select 0,
+	getPos _tank select 1,
+	_height
+];
+
+_chute= "B_Parachute_02_F" createVehicle (getPos _tank);
+
+_chute setPos (getPos _tank);
+
+_chute attachTo [_tank, [0,0,0]];
+sleep 1;
+detach _chute;
+_tank attachTo [_chute, [0,0,0]];
+
+if (surfaceIsWater (getPos _tank)) then {
+	waitUntil 
+	{
+		((getPosASL _tank) select 2) < 3
+	};
+	detach _tank;
+	sleep 2;
+	_tank setVectorUp [0,0,1];
+} else {
+	waitUntil 
+	{
+		((getPos _tank) select 2) < 3
+	};
+	detach _tank;
+	waitUntil {isTouchingGround _tank};
+	sleep 2;
+	_tank setVectorUp [0,0,1];
+	
+};
