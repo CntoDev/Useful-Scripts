@@ -1,0 +1,27 @@
+Shows your current gear classnames. Good for browsing stuff in the arsenal and getting classnames. Keys from 1-7 copies the specific things classname to clipboard.
+
+Usage - Use "Execute code" module and drop this into it: 
+
+
+0 spawn { 
+    findDisplay 46 displayAddEventHandler ["KeyDown",{ 
+        _key = _this select 1; 
+        if (_key == 2) exitWith {copyToClipboard str(primaryWeapon player); true}; 
+        if (_key == 3) exitWith {copyToClipboard str(handgunWeapon player); true}; 
+        if (_key == 4) exitWith {copyToClipboard str(secondaryWeapon player); true}; 
+        if (_key == 5) exitWith {copyToClipboard str(backpack player); true}; 
+        if (_key == 6) exitWith {copyToClipboard str(vest player); true}; 
+        if (_key == 7) exitWith {copyToClipboard str(uniform player); true}; 
+    }]; 
+    waitUntil { 
+        hintSilent format["(1)Primary:\n%1 \n (2)Handgun:\n%2 \n (3)Launcher:\n%3 \n (4)Backpack:\n%4 \n (5)Vest:\n%5 \n (6)Uniform:\n%6", 
+            primaryWeapon player, 
+            handgunWeapon player, 
+            secondaryWeapon player, 
+            backpack player, 
+            vest player, 
+            uniform player 
+        ]; 
+        false 
+    }; 
+}; 
