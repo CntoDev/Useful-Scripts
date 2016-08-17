@@ -1,0 +1,11 @@
+//Name a bargate in game for example bargate1 and put the following below into a trigger with the correct sized zone to activated to gate.
+//Remember to set on presence of the faction you wish the gate to open for.
+
+
+"On Activation"
+
+bargate1 animate ["door_1_rot", 1]
+
+On Deactivation"
+
+bargate1 animate ["door_1_rot", 0]

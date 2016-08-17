@@ -1,0 +1,5 @@
+//Copy and Paste into the whitboards Init Field.
+//Remember to change the Picture source.
+
+
+this setObjectTexture [0, "res\image1.jpg"]

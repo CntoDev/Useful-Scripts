@@ -1,0 +1,8 @@
+!alive will mean the trigger will check to see if the building called trans is Alive if not the trigger will activate.
+
+Once activated the trigger will run the script seen below.
+
+
+Condition = !alive trans;
+
+On Activation = 0 = [0.95] execVM "lights.sqf"; hint "Success";
