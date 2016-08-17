@@ -1,0 +1,9 @@
+Copy and Paste into the Playable units INIT box. 200 refers to height change as you will.
+
+Should work on server as is if not wrap with: 
+
+if (isServer) then { }
+
+chute = "Steerable_Parachute_F" createVehicle [0,0,0]; 
+chute setPos [getPos this select 0, getPos this select 1, 200]; 
+this moveIndriver chute;
