@@ -1,6 +1,0 @@
-trans is the name given to the placed down building in this case the "CUP_A2_trafostanica_velka" place the logic on top of the building.
-
-
-Variable name = myLogic
-
-init = trans = nearestObject [myLogic, "CUP_A2_trafostanica_velka"];
