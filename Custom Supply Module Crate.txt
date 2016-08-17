@@ -1,0 +1,11 @@
+Example Crate Init Script for custom Supply Drop Crate(Inkl colored Smoke as above): FOR USE ON SERVERS:
+
+clearMagazineCargoGlobal _this; clearItemCargoGlobal _this;
+clearWeaponCargoGlobal _this; clearBackpackCargoGlobal _this; 
+_this addMagazineCargoGlobal ["rhs_mag_30Rnd_556x45_M855A1_Stanag", 30];
+_this addWeaponCargoGlobal ["rhs_weap_M136",6]; _this addMagazineCargoGlobal ["rhs_mag_30Rnd_556x45_M855A1_Stanag_Tracer_Red", 20];
+_this addMagazineCargoGlobal ["rhs_200rnd_556x45_M_SAW", 10]; _this addMagazineCargoGlobal ["rhs_mag_M441_HE", 20];
+_this addMagazineCargoGlobal ["HandGrenade", 10]; _this addMagazineCargoGlobal ["SmokeShell", 10];
+_this addItemCargoGlobal ["ACE_fieldDressing", 20]; _this addItemCargoGlobal ["ACE_morphine", 15];
+_this addItemCargoGlobal ["NVGoggles_OPFOR", 50];
+Signal = "SmokeShellYellow" createVehicle position _this; Signal = "Chemlight_yellow" createVehicle position _this; this allowDamage false;
