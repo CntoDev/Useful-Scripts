@@ -1,0 +1,83 @@
+// Copyright by Xander (CNTO) 2016.
+//
+// This script will add a suicide bomb truck functionality to any vehicle.
+// when next to a selected enemy faction's unit or shot dead the bomb will explode.
+// when the "manual" trigger is triggered, the suicide bomber will scream and 5 seconds later the bomb will explode.
+//
+// Usable ammo examples (make sure they come from the CfgAmmo config and have PipeBombBase as parent class!):
+// SatchelCharge_Remote_Ammo_Scripted
+// DemoCharge_Remote_Ammo_Scripted
+// IEDUrbanBig_Remote_Ammo
+// IEDLandBig_Remote_Ammo
+// IEDUrbanSmall_Remote_Ammo
+// IEDLandSmall_Remote_Ammo
+//
+// Example:
+// [SuicideBombTruck, "WEST", "terrorScream", true, "SatchelCharge_Remote_Ammo_Scripted"] spawn CNTO_fnc_makeSuicideVehicle;
+//
+// Variables:
+// SuicideBombTruck is the variable name of your vehicle (when placed in init line, 'this' can be used).
+// WEST is the side it is hostile to, so when it is close to that faction it will explode. can be "EAST", "WEST", "GUER", "CIV"
+// terrorScream is an ingame sound (will have to be in CfgSounds, mission or mod)
+// true (bool) if to always scream, also when the driver is dead by headshot etc. (gameplay)
+// "SatchelCharge_Remote_Ammo_Scripted" is the classname of the explosive. Must have PipeBombBase as parent.
+
+params ["_explosiveTruck","_activationSide", "_screamSound", "_alwaysScream", "_explosiveAmmo"];
+private ["_ammoConfigParents","_triggerAreaCheck","_isTriggered","_explosivePosition","_explosive"];
+
+if(isNull (driver _explosiveTruck)) exitWith{ hint "Vehicle doesn't have a driver.";};
+
+// make sure the driver doesn't go out
+_explosiveTruck allowCrewInImmobile true;
+_explosiveTruck setUnloadInCombat [FALSE,FALSE];
+
+// if no explosive ammo is given or ammo is not explosive, select default explosive ammo.
+if(isNil {_explosiveAmmo}) then
+{
+	_explosiveAmmo = "SatchelCharge_Remote_Ammo_Scripted";
+};
+
+_ammoConfigParents = [(configFile >> "CfgAmmo" >> _explosiveAmmo), true ] call BIS_fnc_returnParents;
+if (_ammoConfigParents find "PipeBombBase" == -1) then
+{
+	hint format ["SuicideBomber: Supplied ammo %1 is not found in CfgAmmo, reset to default: SatchelCharge_Remote_Ammo_Scripted %2" , _explosiveAmmo,_ammoConfigParents];
+	_explosiveAmmo = "SatchelCharge_Remote_Ammo_Scripted";
+};
+
+if(isNil {_alwaysScream}) then
+{
+	_alwaysScream = false;
+};
+
+// make trigger for area check
+_triggerAreaCheck = createTrigger ["EmptyDetector", getPos _explosiveTruck];
+_triggerAreaCheck setTriggerArea [20,20,0,false];
+_triggerAreaCheck setTriggerActivation [_activationSide,"PRESENT",true];
+
+// update trigger position and check if target is close so attack can happen!
+_isTriggered = false;
+while{! _isTriggered} do
+{
+	if(!alive _explosiveTruck) exitwith {};
+	if(!isNull (driver _explosiveTruck) && !alive (driver _explosiveTruck)) exitWith{};
+	_triggerAreaCheck setPos (getPos _explosiveTruck);
+	sleep 0.3;
+	if(triggerActivated _triggerAreaCheck) then
+	{
+		_isTriggered = true;
+	};
+};
+
+if(_isTriggered || _alwaysScream) then
+{
+	_explosiveTruck say3D [_screamSound, 200, 1];
+	if(alive _explosiveTruck) then
+	{
+		sleep 5;
+	};
+};
+
+// trigger explosion
+_explosivePosition = [getPos _explosiveTruck select 0, getPos _explosiveTruck select 1, (getPos _explosiveTruck select 2) + 1.5];
+_explosive = _explosiveAmmo createVehicle _explosivePosition;
+_explosive setDamage 1;
