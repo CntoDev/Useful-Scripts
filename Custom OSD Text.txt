@@ -1,0 +1,41 @@
+We have an InstaOSD module displaying player's location/time on mission start
+which you can use (under Modules -> A3EE), but you can also re-use the
+text-typing functionality for your own text to be displayed on the screen.
+
+Dachi used a similar script in recent missions (2016/09), but that one used
+absolute screen coordinates and thus was partially cut for me (1680x1050)
+and anybody else using anything other than 1920x1080.
+
+This can be fixed by referencing "safe zone" edges instead of absolute pixel
+coordinates, https://community.bistudio.com/wiki/SafeZone .
+
+Our text-typing implementation uses it and therefore should be correctly
+positioned regardless of the player's UI size, aspect ratio or resolution.
+
+
+To use, specify in init.sqf (or on Logic unit init line) one of:
+
+
+["first line", "second line"] call a3ee_fnc_typeText;
+
+
+[
+    "first line",
+    "second line",
+    ["third line with big bold text", true],
+    "fourth line"
+] call a3ee_fnc_typeText;
+
+
+For example,
+
+[
+    ["Operation Tough Job", true],
+    "CNTO Ranger Patrol",
+    "Seize the Radio tower",
+    "2016-01-01 11:22"
+] call a3ee_fnc_typeText;
+
+
+See the function comment for more:
+https://github.com/CntoDev/cnto-additions/blob/master/addons/editor_extensions/functions/misc/fn_typeText.sqf
