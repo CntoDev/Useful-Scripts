@@ -35,7 +35,6 @@ following into the big box and pressing the "LOCAL EXEC" button:
 save3DENInventory get3DENSelected "object";
 ```
 
-
 Things to replace `...` with
 ============================
 
@@ -119,8 +118,6 @@ it.
     ["rhs_GRD40_Red", "rhs_VG40OP_red"]
 ];
 ```
-
-
 
 Replacing primary weapon + mags
 -------------------------------
@@ -233,3 +230,126 @@ of any side and any faction), but that's up to you.
 
 And as always, anything above can be combined with any of the other code
 snippers from this document (like adding NVGs).
+
+Changing Uniform/Vest/Backpack/etc.
+-----------------------------------
+Normally, removing and adding a uniform/vest/backpack would clear the
+contents, however we can "cheat" around that by saving the entire loadout
+aside (to a variable), modifying just the classname itself, and restoring
+the loadout back. This can be done individually for each piece, but makes
+more sense if we can save once, modify more things at the same time and then
+restore the loadout back with all changes applied.
+
+The `if` checks are there in case a unit has no uniform/vest/backpack, so
+that we only swap an existing piece for our one, not add anything.
+
+For more info on the loadout array format,
+[see the BI wiki](https://community.bistudio.com/wiki/Talk:getUnitLoadout).
+
+To change just uniform:
+```
+private _gear = getUnitLoadout _unit;
+if (count (_gear select 3) > 0) then {
+    (_gear select 3) set [0, "classname"];
+};
+_unit setUnitLoadout _gear;
+```
+Just vest:
+```
+private _gear = getUnitLoadout _unit;
+if (count (_gear select 4) > 0) then {
+    (_gear select 4) set [0, "classname"];
+};
+_unit setUnitLoadout _gear;
+```
+Just backpack:
+```
+private _gear = getUnitLoadout _unit;
+if (count (_gear select 5) > 0) then {
+    (_gear select 5) set [0, "classname"];
+};
+_unit setUnitLoadout _gear;
+```
+Set all of uniform/vest/backpack:
+```
+private _gear = getUnitLoadout _unit;
+if (count (_gear select 3) > 0) then {
+    (_gear select 3) set [0, "uniform_classname"];
+};
+if (count (_gear select 4) > 0) then {
+    (_gear select 4) set [0, "vest_classname"];
+};
+if (count (_gear select 5) > 0) then {
+    (_gear select 5) set [0, "backpack_classname"];
+};
+_unit setUnitLoadout _gear;
+```
+
+As a specific example, let's change the uniform/vest/backpack/helmet to cnto
+custom winter flecktarn camo:
+```
+private _gear = getUnitLoadout _unit;
+if (count (_gear select 3) > 0) then {
+    (_gear select 3) set [0, "cnto_flecktarn_u_snow"];
+};
+if (count (_gear select 4) > 0) then {
+    (_gear select 4) set [0, selectRandom ["cnto_flecktarn_v_l_snow", "cnto_flecktarn_v_snow", "cnto_flecktarn_v_h_snow", "cnto_flecktarn_v_s_snow"]];
+};
+if (count (_gear select 5) > 0) then {
+    private _bpclass = (_gear select 5) select 0;
+    private _bpmaxload = getNumber (configFile >> "CfgVehicles" >> _bpclass >> "maximumLoad");
+    switch (_bpmaxload) do {
+        case 160: { (_gear select 5) set [0, "cnto_flecktarn_b_ap_snow"] };
+        case 280: { (_gear select 5) set [0, "cnto_flecktarn_b_kb_snow"] };
+    };
+};
+_gear set [6, selectRandom ["cnto_flecktarn_h_6b27m_snow", "cnto_flecktarn_h_6b27me_snow"]];
+_unit setUnitLoadout _gear;
+```
+In English,
+  * save the current loadout to a variable, so we can work on it
+  * if the unit has a uniform (is not an empty array)
+    * set its classname to ours
+  * if it has a vest (not an empty array)
+    * choose randomly one from the 4 specified and use it
+  * if the unit has a backpack (not an empty array)
+    * get the current backpack classname
+    * read its `maximumLoad` value, how much it can carry
+    * switch (pick) based on this value a suitable replacement - we don't care
+      what the soldier currently has, only that we pick a backpack large enough
+      to fit the contents
+      * 160 is maximum load of an assault pack, so use our retextured AP
+      * 280 is load of a kitbag, so use our retextured KB
+  * set the headgear (helmet) to a random selection out of 2 classes specified
+  * restore the modified loadout into the soldier
+
+Randomizing variants of a weapon (color)
+----------------------------------------
+If a weapon has ie. 4 variations on stock, magazine looks, left hand grip,
+color, camo, etc. and you don't want everyone to have the same weapon, use
+the following to shake things up a bit,
+```
+private _gear = getUnitLoadout _unit;
+if (count (_gear select 0) > 0) then {
+    (_gear select 0) set [0, selectRandom ["class1","class2","class3"]];
+};
+_unit setUnitLoadout _gear;
+```
+specifying all weapon classes you want to pick from (incl. the original
+weapon). All attachments, magazines / shells, etc. are preserved.
+
+To conditionally replace weapons (so that you don't swap non-UGL for UGL
+or vice versa), you can limit the choices based on how many "magazine"
+types the weapon has (assuming >1 is UGL), see replacing primary weapon
+with magazines in the section above.
+```
+private _gear = getUnitLoadout _unit;
+if (count (_gear select 0) > 0) then {
+    if (count primaryWeaponMagazine _unit > 1) then {
+        (_gear select 0) set [0, selectRandom ["rhs_weap_m4a1_carryhandle_m203","rhs_weap_m4a1_carryhandle_m203S"]];
+    } else {
+        (_gear select 0) set [0, selectRandom ["rhs_weap_m4a1_carryhandle_pmag","rhs_weap_m4a1_carryhandle_mstock"]];
+    };
+};
+_unit setUnitLoadout _gear;
+```
