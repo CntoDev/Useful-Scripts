@@ -353,3 +353,54 @@ if (count (_gear select 0) > 0) then {
 };
 _unit setUnitLoadout _gear;
 ```
+
+Switching forest/snow/grassland/mediterranean/etc. variants
+-----------------------------------------------------------
+Sometimes, you'll have gear pieces that come in several flavours, such as
+the cnto flecktarn uniforms (or ie. vanilla backpacks). These have identical
+classnames except for the variant, ie.
+```
+cnto_flecktarn_u_forest
+```
+versus
+```
+cnto_flecktarn_u_snow
+```
+Let's also assume you have multiple loadout pieces like this (uniforms, vests,
+helmets, hats, caps, facewear, backpacks, weapons, etc.) and within each type,
+you can have further variation (vest type - light/heavy/special/etc., headgear -
+hat, cap, etc., facewear - bandana, balaclava, etc.). Replacing all of this
+manually would be a nightmare.
+
+Let's also assume you don't want to use the random approach from above, you
+want soldiers who had light vest to also have a light vest in the new variant.
+
+So what if we took all of the loadout, all classnames, and in each of them,
+regardless of item type, replaced one string piece ("forest") for another
+("snow"), keeping everything else?
+
+The following code does just that:
+```
+private _replace_strings = {
+    params ["_from", "_to", "_gear"];
+    {
+        if (_x isEqualType []) then {
+            [_from, _to, _x] call _replace_strings;
+        } else {
+            if (_x isEqualType "") then {
+                private _off = _x find _from;
+                if (_off != -1) then {
+                    _gear set [_forEachIndex, (_x select [0, _off]) +
+                               _to + (_x select [_off + count _from])];
+                };
+            };
+        };
+    } forEach _gear;
+};
+
+private _gear = getUnitLoadout _unit;
+["mediterranean", "snow", _gear] call _replace_strings;
+_unit setUnitLoadout _gear;
+```
+This replaces any gear piece which contains "mediterranean" in its class name
+with a variant which contains "snow" in the same place of the class name.
