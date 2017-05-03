@@ -17,7 +17,7 @@ Blue Force Tracking editor module.
 
 How to use
 ----------
-Put the code in an A3EE -> Execute Code editor module (leave default settings)
+Put the code in an A3EE -> Execute Code editor module (Unscheduled environment)
 or in `init.sqf`. Optionally, uncomment the marker-deletion-preventing feature.
 
 ```
