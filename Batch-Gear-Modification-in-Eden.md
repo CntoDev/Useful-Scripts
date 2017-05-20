@@ -387,7 +387,7 @@ private _replace_strings = {
         if (_x isEqualType []) then {
             [_from, _to, _x] call _replace_strings;
         } else {
-            if (_x isEqualType "") then {
+            if (_x isEqualType "" && {_x find "cnto_flecktarn_" == 0}) then {
                 private _off = _x find _from;
                 if (_off != -1) then {
                     _gear set [_forEachIndex, (_x select [0, _off]) +
