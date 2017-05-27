@@ -35,6 +35,20 @@ following into the big box and pressing the "LOCAL EXEC" button:
 save3DENInventory get3DENSelected "object";
 ```
 
+Zeus version
+------------
+You can use the same logic when in Zeus using `Execute Code (Local)` or the
+Debug console (Esc) if you are logged in. Simply select units with mouse like
+you would do in Eden, then use this skeleton instead of the above one:
+```
+{[_x, {
+    private _unit = _this;
+
+    ...
+
+}] remoteExec ["call", _x]} forEach (curatorSelected select 0);
+```
+
 Things to replace `...` with
 ============================
 
