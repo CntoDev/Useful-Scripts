@@ -8,15 +8,23 @@ of the enemy unit, as approximated by the spotter.
 
 Multiple motar units can be in the same group with one spotter. Similarly,
 any other unrelated units can be in the same group (soldiers, vehicles, etc.),
-but keep in mind that the group leader needs to spot the targets. Also, the
-leader can change freely over time and the mortar can be re-assigned to a new
-group on the fly, using that group's leader as spotter.
+to help the leader spot enemies. Note that it's still the group leader calling
+the shots, so a subordinate spotter still has to actually report the unit to
+its leader (meaning you can shoot them before they do).
+
+Also, the leader can change freely over time and the mortar can be re-assigned
+to a new group on the fly, using that group's leader as spotter.
 
 See the comments in the code to better understand it / tune the values.
 ```
 0 = this spawn {
-    sleep 11;
     waitUntil {
+        comment "wait 20-40 seconds between checking";
+        sleep (20 + random 20);
+
+        comment "if we're dead/deleted, stop this loop";
+        if (!alive _this) exitWith {};
+
         comment "only if we're mortar - if we exited, stop this loop";
         if (!(vehicle _this isKindOf "StaticMortar")) exitWith {};
 
@@ -43,9 +51,6 @@ See the comments in the code to better understand it / tune the values.
             comment "cool down a bit, wait 30-60 seconds after firing";
             sleep (30 + random 30);
         };
-
-        comment "wait 20-40 seconds between checking";
-        sleep (20 + random 20);
     };
 };
 ```
