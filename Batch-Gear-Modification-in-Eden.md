@@ -1,5 +1,9 @@
 Batch Gear Modification in Eden
 ===============================
+**The following section describes a skeleton you need to use in combination
+with anything further down below, the examples are not usable on their own.**
+For easy video guide, see <https://www.youtube.com/watch?v=ajFO3cFKKr8>.
+
 These code snippets allow you to modify already existing Arsenal-customized
 loadouts on existing units, modifying their gear in batch, so that you don't
 have to do it manually for each one.
@@ -91,6 +95,45 @@ _unit removePrimaryWeaponItem (primaryWeaponItems _unit select 0);
 or to remove all
 ```
 removeAllPrimaryWeaponItems _unit;
+```
+
+Binoculars
+----------
+In Arma, binoculars are considered a "weapon". This means you cannot add them
+as an item using `linkItem`, but have to use `addWeapon`.
+```
+_unit addWeapon "classname_here";
+```
+If a unit already has binoculars, the command is ignored, though. To remove
+any possible binoculars and force your own,
+```
+_unit removeWeapon binocular _unit;
+_unit addWeapon "classname_here";
+```
+Because binoculars are weapons, some need a "magazine" (like a battery) to
+work, like the laser designator. In this case, add the battery before the
+"weapon" itself:
+```
+_unit addMagazine "Laserbatteries";
+_unit addWeapon "Laserdesignator";
+```
+(add `removeWeapon` on top, as shown above, to remove any existing binocular)
+
+Sometimes, you want to only swap binoculars, meaning to add only if the unit
+already has one, like when switching Vector 21 Day for the Nite version:
+```
+if (binocular _unit == "ACE_VectorDay") then {
+    _unit removeWeapon binocular _unit;
+    _unit addWeapon "ACE_Vector";
+};
+```
+or if you don't know what binocular classname the unit has, but you want to
+remove it and force your own, without adding it to binocular-less units:
+```
+if (binocular _unit != "") then {
+    _unit removeWeapon binocular _unit;
+    _unit addWeapon "rhs_tr8_periscope";
+};
 ```
 
 UGL Flares instead of UGL Smokes
