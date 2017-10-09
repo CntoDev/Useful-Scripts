@@ -53,6 +53,26 @@ in Eden, then use this skeleton instead of the above one:
 }] remoteExec ["call", _x]} forEach (curatorSelected select 0);
 ```
 
+Execute Code (Eden) version
+---------------------------
+We have a custom editor module that can execute code directly in Eden when it's
+placed (or the OK button is pressed when editing it). This can be used to
+automate batch changes by saving the module, with code pre-configured, as a custom
+composition, so that mere placing it will run the code.
+
+Since we can't select any units when placing the composition, we have to simply
+rely on changing all "playable" units, which isn't ideal, but should work for you.
+Use this snippet:
+```
+{
+    private _unit = _x;
+
+    ...
+
+} forEach playableUnits;
+save3DENInventory playableUnits;
+```
+
 Things to replace `...` with
 ============================
 
@@ -455,9 +475,68 @@ private _replace_strings = {
     } forEach _gear;
 };
 
+private _new_camo = "snow";
+
 private _gear = getUnitLoadout _unit;
-["mediterranean", "snow", _gear] call _replace_strings;
+["mediterranean", _new_camo, _gear] call _replace_strings;
 _unit setUnitLoadout _gear;
 ```
 This replaces any gear piece which contains "mediterranean" in its class name
 with a variant which contains "snow" in the same place of the class name.
+
+The following is the same code, with weapon swapping (based on original class)
+added:
+```
+private _replace_strings = {
+    params ["_from", "_to", "_gear"];
+    {
+        if (_x isEqualType []) then {
+            [_from, _to, _x] call _replace_strings;
+        } else {
+            if (_x isEqualType "" && {_x find "cnto_flecktarn_" == 0}) then {
+                private _off = _x find _from;
+                if (_off != -1) then {
+                    _gear set [_forEachIndex, (_x select [0, _off]) +
+                               _to + (_x select [_off + count _from])];
+                };
+            };
+        };
+    } forEach _gear;
+};
+private _swap_weapons = {
+    params ["_camo", "_gear"];
+    private _weaparr = _gear select 0;
+    if (count _weaparr < 1) exitWith {};
+    private _new = switch (_camo) do {
+        case "desert": {
+            switch (_weaparr select 0) do {
+                case "rhs_weap_hk416d10":       { "cnto_hk416_d10" };
+                case "rhs_weap_hk416d10_m320":  { "cnto_hk416_d10_m320" };
+                case "rhs_weap_hk416d145":      { "cnto_hk416_d145" };
+                case "rhs_weap_hk416d145_m320": { "cnto_hk416_d145_m320" };
+                default {};
+            };
+        };
+        case "snow": {
+            switch (_weaparr select 0) do {
+                case "rhs_weap_hk416d10":       { "cnto_hk416_d10s" };
+                case "rhs_weap_hk416d10_m320":  { "cnto_hk416_d10_m320s" };
+                case "rhs_weap_hk416d145":      { "cnto_hk416_d145s" };
+                case "rhs_weap_hk416d145_m320": { "cnto_hk416_d145_m320s" };
+                default {};
+            };
+        };
+        default {};
+    };
+    if (!isNil "_new") then {
+        _weaparr set [0, _new];
+    };
+};
+
+private _new_camo = "snow";
+
+private _gear = getUnitLoadout _unit;
+["mediterranean", _new_camo, _gear] call _replace_strings;
+[_new_camo, _gear] call _swap_weapons;
+_unit setUnitLoadout _gear;
+```
