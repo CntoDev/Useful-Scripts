@@ -12,8 +12,8 @@
  * None
  *
  * Example:
- * [true, getPos player, 1000] spawn fnc_toggleLights; 
- * Turns lights on 1000m around the player's position.
+ * [true, getMarkerPos "LightsMarker2", 1000] spawn fnc_toggleLights; 
+ * Turns lights on 1000m around the position of marker "LightsMarker2".
  *
  * Public: Yes
  */
