@@ -1,0 +1,54 @@
+///////// Working //////////// no hint pop up or diary entry ///////////////////////////////////////
+
+
+[
+    this,
+    "Download Intel",
+    "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_hack_ca.paa",
+    "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_hack_ca.paa",
+    "(_this distance _target < 3)",
+    "_caller distance _target < 3",
+    {},
+    {},
+    {
+        0 = [0.95] execVM 'lights.sqf'
+    },
+    {},
+    [],
+    12, // Length of time player has to hold the action for it to complete
+    0,
+    true,
+    false
+] call BIS_fnc_holdActionAdd;
+
+
+/////// WORKING ////////////// with hint and diary entry /////////// Also it executed and sqf file in this case the lights out script///////////////////////////////////
+
+
+[ 
+    this, 
+    "Cut power to the compound", 
+    "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_forceRespawn_ca.paa", 
+    "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_forceRespawn_ca.paa", 
+    "(_this distance _target < 3) && isNil 'intel_photo_taken'", 
+    "_caller distance _target < 3", 
+    {}, 
+    {}, 
+    { 
+        intel_photo_taken = 1; 
+        publicVariable "intel_photo_taken"; 
+        "Compound power has been cut" remoteExec ["hint"]; 
+        { 
+            player createDiaryRecord [ 
+                "Diary", [ 
+                    "Intel", 
+                    "Compound power has been cut" 
+                ] 
+            ] 
+        } remoteExec ["call", 0, true]; 0 = [0.95] execVM 'lights.sqf'; 
+    }, 
+    {}, 
+    [], 
+    12, // Length of time player has to hold the action for it to complete
+    0 
+] call BIS_fnc_holdActionAdd;

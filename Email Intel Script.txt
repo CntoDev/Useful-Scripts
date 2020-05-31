@@ -1,0 +1,18 @@
+////// WORKING //////
+
+this addAction ["<t color=""#33CCFF"">Download Intel</t>",{{(_this select 0) removeAction (_this select 2)}; 
+  params ["_target", "_caller"]; 
+IntelDownloaded = 1; publicVariable "Intel Downloaded"; 
+"Your Intel has been downloaded" remoteExec ["hint"]; 
+{ player createDiaryRecord ["Diary", ["Intel",  
+"<font size='18'>Email</font><br/> 
+Received 1600 26.08.2016<br/> 
+From UNKNOWN<br/><br/> 
+MESSAGE<br/> 
+Our sources have provided Information that General Vasily Zhukov will attempt a military coup tomorrow at 0100hrs you should move as soon as possible to a safe place. <br/><br/> 
+REPLY<br/> 
+Thank you I will leave immediately I have sent a convoy as a diversion to Corazol but I am leaving now for my home town I will be safe there, will you send troops to help fight these traitors? <br/><br/> 
+REPLY<br/> 
+We are watching the situation carefully we will intervene if required. <br/><br/> 
+MESSAGE END<br />"]] } remoteExec ["call", 0, true];  
+},nil,0.1,true,true,"", "isNil ""IntelDownloaded"" && ((_target distance _this) < 2)"]

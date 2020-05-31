@@ -1,0 +1,16 @@
+//This is an example of using the DataTerminal as an intel source that gives all players the designated intel into their diary.
+//It should be placed into the terminals Init box and named correctly.
+
+
+Variable Name = IntelTerminal // The variable name of the terminal box
+
+init = // The code below goes into the boxes init
+
+this addAction ["Download Plans",{ 
+  params ["_target", "_caller"];
+PlansDownloaded = 1; publicVariable "PlansDownloaded";
+[_target, 3] remoteExec ["BIS_fnc_dataTerminalAnimate"];
+sleep 5; [_target, 0] remoteExec ["BIS_fnc_dataTerminalAnimate"];
+"Your Intel has been downloaded" remoteExec ["hint"];
+{ player createDiaryRecord ["Diary", ["Intel", "Enemy are planning an attack on <marker name='attack'>Chernagorsk Govt Building</marker> using under cover rebels<br /><img image='undercover_agents.jpg' />"]] } remoteExec ["call", 0, true]; 
+},nil,0.1,true,true,"", "isNil ""PlansDownloaded"" && ((_target distance _this) < 2)"]; (_this select 0) removeaction (_this select 2)}];

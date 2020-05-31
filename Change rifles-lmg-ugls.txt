@@ -1,0 +1,31 @@
+// Used in the debug console in the Editor.
+
+
+{ 
+    private _unit = _x;
+
+{ _unit removeMagazines _x } forEach getArray (configFile >> "CfgWeapons" >> primaryWeapon _unit >> "magazines");
+if (_unit ammo primaryWeapon _unit >= 50) then {
+    _unit removeWeapon primaryWeapon _unit;
+    _unit addWeapon "rhs_weap_m27iar_grip";
+    _unit addPrimaryWeaponItem "150Rnd_556x45_Drum_Mag_F";
+    while {_unit canAdd "150Rnd_556x45_Drum_Mag_F"} do { _unit addItem "150Rnd_556x45_Drum_Mag_Tracer_F" };
+} else {
+    if (count primaryWeaponMagazine _unit > 1) then {
+        _unit removeWeapon primaryWeapon _unit;
+        _unit addWeapon "rhs_weap_m4a1_blockII_M203_d";
+        _unit addPrimaryWeaponItem "1Rnd_HE_Grenade_shell";
+    } else {
+        _unit removeWeapon primaryWeapon _unit;
+        _unit addWeapon "rhs_weap_mk18_d";
+    };
+    _unit addPrimaryWeaponItem "rhs_mag_30Rnd_556x45_Mk318_Stanag";
+    _unit addPrimaryWeaponItem "RH_Saker_des";
+    _unit addPrimaryWeaponItem "RH_SFM952V_tan";
+    _unit addPrimaryWeaponItem "RH_cmore";
+    for "_i" from 1 to 8 do { _unit addItem "rhs_mag_30Rnd_556x45_Mk318_Stanag" };
+    for "_i" from 1 to 2 do { _unit addItem "rhs_mag_30Rnd_556x45_M855A1_Stanag_Tracer_Red" };
+};
+
+} forEach get3DENSelected "object"; 
+save3DENInventory get3DENSelected "object";

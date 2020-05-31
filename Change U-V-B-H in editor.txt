@@ -1,0 +1,26 @@
+// Used in the debug console in the Editor.
+
+
+{ 
+    private _unit = _x;
+ 
+private _gear = getUnitLoadout _unit; 
+if (count (_gear select 3) > 0) then { 
+    (_gear select 3) set [0, "rhs_uniform_FROG01_wd"]; 
+}; 
+if (count (_gear select 4) > 0) then { 
+    (_gear select 4) set [0, selectRandom ["rhsusf_spc_squadleader", "rhsusf_spc_squadleader", "rhsusf_spc_squadleader", "rhsusf_spc_squadleader"]]; 
+}; 
+if (count (_gear select 5) > 0) then { 
+    private _bpclass = (_gear select 5) select 0; 
+    private _bpmaxload = getNumber (configFile >> "CfgVehicles" >> _bpclass >> "maximumLoad"); 
+    switch (_bpmaxload) do { 
+        case 160: { (_gear select 5) set [0, "B_AssaultPack_rgr"] }; 
+        case 280: { (_gear select 5) set [0, "cnto_vanilla_kitbag_blk"] }; 
+    }; 
+}; 
+_gear set [6, selectRandom ["Helmet_SF_khaki", "Helmet_SF_khaki"]]; 
+_unit setUnitLoadout _gear;
+ 
+} forEach get3DENSelected "object"; 
+save3DENInventory get3DENSelected "object";

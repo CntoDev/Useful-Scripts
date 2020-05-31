@@ -1,0 +1,14 @@
+//// Used on the plane to enable a safe start //////
+
+
+if (isServer) then {
+  0 = this spawn {
+    _this enableSimulationGlobal false;
+
+waitUntil { time > 0 };
+
+sleep 20; /// Length of time that simulation is disabled on the plane while mission loads
+
+_this enableSimulationGlobal true;
+  };
+};

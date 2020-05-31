@@ -1,0 +1,67 @@
+///// WORKING ///// Standard Add Action through scroll wheel  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+this addAction ["<t color=""#33CCFF"">Download Intel</t>",{{(_this select 0) removeAction (_this select 2)}; 
+  params ["_target", "_caller"];
+PhotoTaken = 1; publicVariable "Photo taken";
+"The photo has been uploaded to your Diary" remoteExec ["hint"];
+{ player createDiaryRecord ["Diary", ["Intel", 
+"***CLASSIFIED***<br/><img image='images\secret.jpg'/><br/>***CLASSIFIED***"]] } remoteExec ["call", 0, true]; // Image size width is a max 367 for briefing pictures
+},nil,0.1,true,true,"", "isNil ""PhotoTaken"" && ((_target distance _this) < 2)"]
+
+
+
+///// WORKING ///// SHOWS ICON ABOVE OBJECT /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+onEachFrame {
+    private "_private";
+    _playerPos = getPosATL player;
+    drawIcon3D [
+        "\a3\ui_f\data\IGUI\Cfg\Radar\radar_ca.paa",
+        [0,0,1,0.5],
+        [_playerPos select 0,_playerPos select 1,2.3],
+        5,
+        5,
+        direction player,
+        "COMPASS",
+        0,
+        0.03,
+        "PuristaMedium"
+    ];
+};
+
+
+
+///// WORKING ///// ADD HOLD ACTION PHOTO INTEL same as leaflet////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+[
+    this,
+    "Download Intel",
+    "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_connect_ca.paa",
+    "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_connect_ca.paa",
+    "(_this distance _target < 3) && isNil 'intel_photo_taken'",
+    "_caller distance _target < 3",
+    {},
+    {},
+    {
+        intel_photo_taken = 1;
+        publicVariable "intel_photo_taken";
+        "The virus has been uploaded" remoteExec ["hint"];
+        {
+            player createDiaryRecord [
+                "Diary", [
+                    "Intel",
+                    "***CLASSIFIED***<br/>Virus has been uploades and has successfully disabled the airport power grid<br/>***CLASSIFIED***"
+                ]
+            ]
+        } remoteExec ["call", 0, true]; 0 = [0.95] execVM 'lights.sqf';
+    },
+    {},
+    [],
+    12,
+    0
+] call BIS_fnc_holdActionAdd;
