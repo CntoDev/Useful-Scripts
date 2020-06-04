@@ -19,7 +19,7 @@
  */
  
 params ["_onoff", "_position", ["_distance", 500]];
-_types = ["Lamps_Base_F", "PowerLines_base_F"];
+_types = ["lamps_base_f", "powerlines_base_f", "land_powerpolewooden_f", "land_lampharbour_f", "land_lampshabby_f", "land_powerpolewooden_l_f", "land_powerpolewooden_small_f", "land_lampdecor_f", "land_lamphalogen_f", "land_lampsolar_f", "land_lampstreet_small_f", "land_lampstreet_f", "land_lampairport_f", "land_powerpolewooden_l_f"];
 
 private _damage_value = 0;
 
