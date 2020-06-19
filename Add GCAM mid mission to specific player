@@ -1,0 +1,27 @@
+/* 
+This code will add Gcam access to a player and that player only.
+Use the "Execute Code" module from Zeus run in "local" mode.
+Replace "Seb" with your player's in-game name (your Arma 3 profile name), or the player you want to have camera access.
+Camera access will be lost on player death, reconnect or respawn and must be re-added.
+*/
+
+if ("Seb" == (name player)) then 
+{
+	player addAction [
+	"Gcam",	
+		{
+		params ["_target", "_caller", "_actionId", "_arguments"];
+		execVM "gcam\gcam.sqf";
+		},
+	nil,		
+	1.5,		
+	true,		
+	true,		
+	"",			
+	"_originalTarget == _this", 
+	5,			
+	false,		
+	"",		
+	""	
+	];
+};
