@@ -53,7 +53,9 @@ _vehicle addEventHandler ["GetIn", {
 	params ["_parentVehicle", "_role", "_unit", "_turret"];
 	// is the player the one who just got in?
 	if (player ==  _unit) then {
-		// This "spawn" handles logic for updating crew about gunner info
+	
+	
+		// This "spawn" handles logic for updating crew about gunner and commander info
 		[_parentVehicle,_role,_unit,_turret] spawn {
 			params ["_parentVehicle", "_role", "_unit", "_turret"];
 				while {true} do {
@@ -75,10 +77,6 @@ _vehicle addEventHandler ["GetIn", {
 					//broadcasts where gunner is looking and fov to crew
 					[missionNamespace,["Seb_fnc_CrewVisionMap_gunnerTargetPos",_gunnerTarget]] remoteExec ["setVariable",_gunnerClientTargets];
 					[missionNamespace,["Seb_fnc_CrewVisionMap_gunnerFOV",_gunnerApproxFov]] remoteExec ["setVariable",_gunnerClientTargets];
-					// this code executes twice per second
-					sleep 0.5;
-					// checks if player has got out, exits while loop if true
-					if !(_unit in _parentVehicle) exitWith {};
 				};
 				
 				//COMMANDER: while loop for providing info to crew
@@ -98,16 +96,17 @@ _vehicle addEventHandler ["GetIn", {
 					//broadcasts where commander is looking and fov to crew
 					[missionNamespace,["Seb_fnc_CrewVisionMap_commanderTargetPos",_commanderTarget]] remoteExec ["setVariable",_commanderClientTargets];
 					[missionNamespace,["Seb_fnc_CrewVisionMap_commanderFOV",_commanderApproxFov]] remoteExec ["setVariable",_commanderClientTargets];
-					// this code executes twice per second
-					sleep 0.5;
-					// checks if player has got out, exits while loop if true
-					if !(_unit in _parentVehicle) exitWith {};
+					
 				};
+				// checks if player has got out, exits while loop if true
+				if !(_unit in _parentVehicle) exitWith {};
+				// guinner and commander update crew twice per second
+				sleep 0.5;
 			};
 		};
 		
-		
-		// This "spawn" handles logic for drawing markers and cones and stuff
+		// START OF gunner SECTION
+		// This "spawn" handles logic for gunner marker and cone updating
 		[_parentVehicle,_role,_unit,_turret] spawn {
 			params ["_parentVehicle", "_role", "_unit", "_turret"];
 			// create the map markers and vision cone out of player sight for each crew position
@@ -115,30 +114,16 @@ _vehicle addEventHandler ["GetIn", {
 			Seb_fnc_CrewVisionMap_gunnerMarkerName setMarkerTypeLocal "mil_destroy";
 			Seb_fnc_CrewVisionMap_gunnerMarkerName setMarkerTextLocal " Gunner";
 			Seb_fnc_CrewVisionMap_gunnerMarkerName setMarkerColorLocal "ColorBlue";
-			
-			createMarkerLocal [Seb_fnc_CrewVisionMap_commanderMarkerName,[-10000,-10000,-10000]];
-			Seb_fnc_CrewVisionMap_commanderMarkerName setMarkerTypeLocal "mil_box";
-			Seb_fnc_CrewVisionMap_commanderMarkerName setMarkerTextLocal "Commander";
-			Seb_fnc_CrewVisionMap_commanderMarkerName setMarkerColorLocal "ColorGreen";
-			Seb_fnc_CrewVisionMap_commanderMarkerName setMarkerDirLocal 45;
-			
+
 			// creates vision cone polygon coords miles away so that if there is no gunner it does not produce error
 			// alternative is to add an if statement to draw event handler
 			Seb_fnc_CrewVisionMap_gunnerCone = +Seb_fnc_CrewVisionMap_BlankCone;
-			Seb_fnc_CrewVisionMap_commanderCone = +Seb_fnc_CrewVisionMap_BlankCone;
 			
 			// first loop of interpolation will throw an error if there are no "old" variables, this creates the old loop and marker coords as some dummy values that are overwritten immediately
-			// Gunner dummy interpolation values
+			// gunner dummy interpolation values
 			_gunnerConeOld = +Seb_fnc_CrewVisionMap_BlankCone;
 			Seb_fnc_CrewVisionMap_gunnerConeInterpTemp = +Seb_fnc_CrewVisionMap_BlankCone;
 			_gunnerMarkerPosOld = [0,0,0];
-			
-			// Commander dummy interpolation values
-			_commanderConeOld = +Seb_fnc_CrewVisionMap_BlankCone;
-			Seb_fnc_CrewVisionMap_commanderConeInterpTemp = +Seb_fnc_CrewVisionMap_BlankCone;
-			_commanderMarkerPosOld = [0,0,0];
-			
-			
 			
 			// while loop for constantly updating cone and map marker info
 			while {true} do {
@@ -147,10 +132,6 @@ _vehicle addEventHandler ["GetIn", {
 				_parentVehiclePos = getPos _parentVehicle;
 				_parentVehiclePos params ["_parentVehiclePosX", "_parentVehiclePosY"];
 				
-				// if there is no gunner OR commander sleep for a bit, as there is no sleep anyuwhere else if both are null.
-				if ((isNull (gunner _parentVehicle)) && (isNull (commander _parentVehicle))) then {sleep 1;};
-				
-				//GUNNER: update map marker and build cone of vision info if there is a gunner
 				if !(isNull (gunner _parentVehicle)) then {
 					
 					// Resets cone for new calc loop
@@ -212,20 +193,53 @@ _vehicle addEventHandler ["GetIn", {
 						// sleep is 1/24, as i loop is 1/12+1 for something updating twice per second = 25fps interpolation
 						sleep 0.04;
 						
-						
-						
 					};
 					// old gunner cone array and position to interpolate FROM next loop
 					_gunnerMarkerPosOld = _gunnerMarkerNew;
 					_gunnerConeOld = seb_fnc_CrewVisionMap_gunnerCone;
 				} else {
-					// this else could be an if statement inside the true statement of the same code, this way it wouldnt run every loop but I cba
 					Seb_fnc_CrewVisionMap_gunnerMarkerName setMarkerPosLocal [-10000,-10000,-10000];
 					Seb_fnc_CrewVisionMap_gunnerCone = [[-10000,-10000,-10000],[-10000,-10000,-10000],[-10000,-10000,-10000]];
+					sleep 0.5;
 				};
-				// END OF GUNNER SECTION
 				
-				//COMMANDER: update map marker and build cone of vision info if there is a commander
+				
+				// checks if player has got out, exits while loop if true
+				if !(_unit in _parentVehicle) exitWith {			
+					deleteMarkerLocal Seb_fnc_CrewVisionMap_gunnerMarkerName;
+				};	
+			};
+		};
+		// END OF gunner SECTION
+		
+		// START OF commander SECTION
+		// This "spawn" handles logic for commander marker and cone updating
+		[_parentVehicle,_role,_unit,_turret] spawn {
+			params ["_parentVehicle", "_role", "_unit", "_turret"];
+			// create the map markers and vision cone out of player sight for each crew position
+			createMarkerLocal [Seb_fnc_CrewVisionMap_commanderMarkerName,[-10000,-10000,-10000]];
+			Seb_fnc_CrewVisionMap_commanderMarkerName setMarkerTypeLocal "mil_box";
+			Seb_fnc_CrewVisionMap_commanderMarkerName setMarkerTextLocal "Commander";
+			Seb_fnc_CrewVisionMap_commanderMarkerName setMarkerColorLocal "ColorGreen";
+			Seb_fnc_CrewVisionMap_commanderMarkerName setMarkerDirLocal 45;
+
+			// creates vision cone polygon coords miles away so that if there is no commander it does not produce error
+			// alternative is to add an if statement to draw event handler
+			Seb_fnc_CrewVisionMap_commanderCone = +Seb_fnc_CrewVisionMap_BlankCone;
+			
+			// first loop of interpolation will throw an error if there are no "old" variables, this creates the old loop and marker coords as some dummy values that are overwritten immediately
+			// gnner dummy interpolation values
+			_commanderConeOld = +Seb_fnc_CrewVisionMap_BlankCone;
+			Seb_fnc_CrewVisionMap_commanderConeInterpTemp = +Seb_fnc_CrewVisionMap_BlankCone;
+			_commanderMarkerPosOld = [0,0,0];
+			
+			// while loop for constantly updating cone and map marker info
+			while {true} do {
+			
+				//Provides vehicle's X and Y coords, used to draw cones for the commander and commander
+				_parentVehiclePos = getPos _parentVehicle;
+				_parentVehiclePos params ["_parentVehiclePosX", "_parentVehiclePosY"];
+				
 				if !(isNull (commander _parentVehicle)) then {
 					
 					// Resets cone for new calc loop
@@ -234,7 +248,7 @@ _vehicle addEventHandler ["GetIn", {
 					_commanderDistanceToTarget = _parentVehicle distance2D Seb_fnc_CrewVisionMap_commanderTargetPos;			
 					// Calculates direction to target
 					_commanderDirectionToTarget = _parentVehicle getDir Seb_fnc_CrewVisionMap_commanderTargetPos;
-					// Fov ratio calculated by (tan(fov)*distance) divided by 100 as blank cone has dimensions of x100.
+					// Fov ratio calculated by (tan(fov)*distance) divided by 100 as blank cone is set at 100m to target.
 					_commanderFovRatio = tan(Seb_fnc_CrewVisionMap_commanderFOV/2)*(_commanderDistanceToTarget/100);
 
 					// Modifies the blank cone with properties from distance2d and FOV. Scales before rotation for less trig!, x dimension is FOV y is distance to target, then rotates.
@@ -245,7 +259,7 @@ _vehicle addEventHandler ["GetIn", {
 						_commanderNewY = _commanderBlankY;
 						// Scales Y dimension to match distance to target
 						_commanderNewY = _commanderNewY * (_commanderDistanceToTarget/100);
-						// Scales the curve cone so it isn't skewed and has a consistent radius. This took formula took way too long.
+						// Scales the curved cone so it isn't skewed and has a consistent radius. This took formula took way too long.
 						if (_commanderSelector >= 2 && _commanderSelector <= 12) then {_commanderNewY = ((_commanderNewY-_commanderDistanceToTarget)*(tan(Seb_fnc_CrewVisionMap_commanderFOV/2))+_commanderDistanceToTarget)};
 	
 						// Multiplies X dimensions by FOV ratio of blank cone TAN to actual TAN.
@@ -285,22 +299,28 @@ _vehicle addEventHandler ["GetIn", {
 						Seb_fnc_CrewVisionMap_commanderCone = +Seb_fnc_CrewVisionMap_commanderConeInterpTemp;	
 						
 						// sleep is 1/24, as i loop is 1/12+1 for something updating twice per second = 25fps interpolation
-						sleep 0.04;	
+						sleep 0.04;
+						
 					};
 					// old commander cone array and position to interpolate FROM next loop
 					_commanderMarkerPosOld = _commanderMarkerNew;
 					_commanderConeOld = seb_fnc_CrewVisionMap_commanderCone;
 				} else {
-					// this else could be an if statement inside the true statement of the same code, this way it wouldnt run every loop but I cba
 					Seb_fnc_CrewVisionMap_commanderMarkerName setMarkerPosLocal [-10000,-10000,-10000];
 					Seb_fnc_CrewVisionMap_commanderCone = [[-10000,-10000,-10000],[-10000,-10000,-10000],[-10000,-10000,-10000]];
+					sleep 0.5;
 				};
+				// END OF commander SECTION
+				
 				// checks if player has got out, exits while loop if true
 				if !(_unit in _parentVehicle) exitWith {			
-					deleteMarkerLocal Seb_fnc_CrewVisionMap_gunnerMarkerName;
+					deleteMarkerLocal Seb_fnc_CrewVisionMap_commanderMarkerName;
 				};	
 			};
 		};
+		// END OF commander SECTION
+		
+		
 		// spawns vision cone
 		[_parentVehicle,_role,_unit,_turret] spawn {
 			params ["_parentVehicle", "_role", "_unit", "_turret"];
