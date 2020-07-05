@@ -138,13 +138,18 @@ _vehicle addEventHandler ["GetIn", {
 			Seb_fnc_CrewVisionMap_commanderConeInterpTemp = +Seb_fnc_CrewVisionMap_BlankCone;
 			_commanderMarkerPosOld = [0,0,0];
 			
-			//Provides vehicle's X and Y coords, used to draw cones for the commander and gunner
-			_parentVehiclePos = getPos _parentVehicle;
-			_parentVehiclePos params ["_parentVehiclePosX", "_parentVehiclePosY"];
+			
 			
 			// while loop for constantly updating cone and map marker info
 			while {true} do {
-
+			
+				//Provides vehicle's X and Y coords, used to draw cones for the commander and gunner
+				_parentVehiclePos = getPos _parentVehicle;
+				_parentVehiclePos params ["_parentVehiclePosX", "_parentVehiclePosY"];
+				
+				// if there is no gunner OR commander sleep for a bit, as there is no sleep anyuwhere else if both are null.
+				if ((isNull (gunner _parentVehicle)) && (isNull (commander _parentVehicle))) then {sleep 1};
+				
 				//GUNNER: update map marker and build cone of vision info if there is a gunner
 				if !(isNull (gunner _parentVehicle)) then {
 					
@@ -280,10 +285,7 @@ _vehicle addEventHandler ["GetIn", {
 						Seb_fnc_CrewVisionMap_commanderCone = +Seb_fnc_CrewVisionMap_commanderConeInterpTemp;	
 						
 						// sleep is 1/24, as i loop is 1/12+1 for something updating twice per second = 25fps interpolation
-						sleep 0.04;
-						
-						
-						
+						sleep 0.04;	
 					};
 					// old commander cone array and position to interpolate FROM next loop
 					_commanderMarkerPosOld = _commanderMarkerNew;
