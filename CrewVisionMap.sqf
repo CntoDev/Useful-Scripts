@@ -148,7 +148,7 @@ _vehicle addEventHandler ["GetIn", {
 				_parentVehiclePos params ["_parentVehiclePosX", "_parentVehiclePosY"];
 				
 				// if there is no gunner OR commander sleep for a bit, as there is no sleep anyuwhere else if both are null.
-				if ((isNull (gunner _parentVehicle)) && (isNull (commander _parentVehicle))) then {sleep 1};
+				if ((isNull (gunner _parentVehicle)) && (isNull (commander _parentVehicle))) then {sleep 1;};
 				
 				//GUNNER: update map marker and build cone of vision info if there is a gunner
 				if !(isNull (gunner _parentVehicle)) then {
