@@ -3,7 +3,8 @@
 This will create and update a map marker where the gunner & commander are looking for every crew member of a given vehicle.
 It will also create a cone of vision, based on their current FOV.
 
-It will only work if that crew member is a player.
+This is designed for multiplayer with player crew members only.
+It will only work if the gunner or commander is a player.
 
 HOW TO USE:
 Add this script to your mission's folder, and in the init of your vehicle add the following:
@@ -11,44 +12,35 @@ this execVM "CrewVisionMap.sqf";
 
 To initialise for more than one vehicle, simply copy that same init code to the new vehicle.
 
-This will only work if the vehicle has a "gunner" OR "commander" slot, or both. If it only has 1 of those that's fine, it's just pointless to use these slots do not exist.
+This will only work if the vehicle has a "gunner" OR "commander" slot, or both. If it only has 1 of those that's fine, it's just pointless to use if these slots do not exist.
 
-DO NOT EXECUTE SERVER-ONLY, or it will not work.
+Must be executed locally, do not wrap in ifServer.
 */
+
+
 if !(hasInterface) exitWith {};
 params ["_vehicle"];
-	// Gives unique marker name to be used for all instances of this script. Each instance will reuse this marker as required, as the player can't be in two vehicles at once this is no problem.
-	Seb_fnc_CrewVisionMap_gunnerMarkerName = "Seb_fnc_CrewVisionMap_gunnerMarker";
-	Seb_fnc_CrewVisionMap_gunnerTargetPos = [0,0,0];
-	Seb_fnc_CrewVisionMap_gunnerFOV = 90;
 	
-	Seb_fnc_CrewVisionMap_commanderMarkerName = "Seb_fnc_CrewVisionMap_commanderMarker";
-	Seb_fnc_CrewVisionMap_commanderTargetPos = [0,0,0];
-	Seb_fnc_CrewVisionMap_commanderFOV = 90;
-	
-
-	
-	// Event handler for player getting into vehicle
+// Event handler for player getting into vehicle
 _vehicle addEventHandler ["GetIn", {
-	// initialising all vars to be used a re-used later
-	
-	// blank cone to be manipulated based on FOV and distancetoTarget, This cone is 90deg at 100m. Instead of calculating a new cone each frame, this one will be manipulated
-	Seb_fnc_CrewVisionMap_BlankCone = [
-	[0,0,0],
-	[-100,100,0],
-	[-96.5925826289068,125.881904510252,0],
-	[-86.6025403784439,150,0],
-	[-70.7106781186548,170.710678118655,0],
-	[-50,186.602540378444,0],
-	[-25.8819045102521,196.592582628907,0],
-	[-6.12323399573677E-15,200,0],
-	[25.8819045102521,196.592582628907,0],
-	[50,186.602540378444,0],
-	[70.7106781186547,170.710678118655,0],
-	[86.6025403784439,150,0],
-	[96.5925826289068,125.881904510252,0],
-	[100,100,0]
-	];
+
+// blank cone vertexes to be manipulated based on FOV and distanceToTarget, This cone is 90deg at 100m. Instead of calculating a new cone each frame, this one will be manipulated
+Seb_fnc_CrewVisionMap_BlankCone = [
+	[0			,0			,0],
+	[-100		,100		,0],
+	[-96.593	,125.883	,0],
+	[-86.603	,150		,0],
+	[-70.711	,170.711	,0],
+	[-50		,186.603	,0],
+	[-25.882	,196.593	,0],
+	[-6.123		,200		,0],
+	[25.882		,196.593	,0],
+	[50			,186.603	,0],
+	[70.711		,170.711	,0],
+	[86.603		,150		,0],
+	[96.593		,125.882	,0],
+	[100		,100		,0]
+];
 
 	params ["_parentVehicle", "_role", "_unit", "_turret"];
 	// is the player the one who just got in?
@@ -74,7 +66,8 @@ _vehicle addEventHandler ["GetIn", {
 					_gunnerTarget = (lineIntersectsSurfaces [eyepos Player,ATLToASL screenToWorld [0.5,0.5],player,vehicle player,true,1,"GEOM","VIEW"] select 0) select 0;
 					// for some reason the above can sometimes return nil when looking at terrain. This detects & fixes that. Luckily this returns what the above should.
 					if (isNil "_gunnerTarget") then {_gunnerTarget = screenToWorld [0.5,0.5];};
-					//broadcasts where gunner is looking and fov to crew
+					
+					//broadcasts where gunner is looking and fov to crew. Must use remoteExec as setVariable does not accept objects as targets, only clientIDs.
 					[missionNamespace,["Seb_fnc_CrewVisionMap_gunnerTargetPos",_gunnerTarget]] remoteExec ["setVariable",_gunnerClientTargets];
 					[missionNamespace,["Seb_fnc_CrewVisionMap_gunnerFOV",_gunnerApproxFov]] remoteExec ["setVariable",_gunnerClientTargets];
 				};
@@ -93,7 +86,8 @@ _vehicle addEventHandler ["GetIn", {
 					_commanderTarget = (lineIntersectsSurfaces [eyepos Player,ATLToASL screenToWorld [0.5,0.5],player,vehicle player,true,1,"GEOM","VIEW"] select 0) select 0;
 					// for some reason the above can sometimes return nil when looking at terrain. This detects & fixes that. Luckily this returns what the above should.
 					if (isNil "_commanderTarget") then {_commanderTarget = screenToWorld [0.5,0.5];};
-					//broadcasts where commander is looking and fov to crew
+					
+					//broadcasts where commander is looking and fov to crew. Must use remoteExec as setVariable does not accept objects as targets, only clientIDs.
 					[missionNamespace,["Seb_fnc_CrewVisionMap_commanderTargetPos",_commanderTarget]] remoteExec ["setVariable",_commanderClientTargets];
 					[missionNamespace,["Seb_fnc_CrewVisionMap_commanderFOV",_commanderApproxFov]] remoteExec ["setVariable",_commanderClientTargets];
 					
@@ -109,6 +103,12 @@ _vehicle addEventHandler ["GetIn", {
 		// This "spawn" handles logic for gunner marker and cone updating
 		[_parentVehicle,_role,_unit,_turret] spawn {
 			params ["_parentVehicle", "_role", "_unit", "_turret"];
+			
+			// Gives unique marker name for gunner to be used for all instances of this script. Each instance will reuse this marker as required, as the player can't be in two vehicles at once this is no problem.
+			Seb_fnc_CrewVisionMap_gunnerMarkerName = "Seb_fnc_CrewVisionMap_gunnerMarker";
+			Seb_fnc_CrewVisionMap_gunnerTargetPos = [0,0,0];
+			Seb_fnc_CrewVisionMap_gunnerFOV = 90;
+			
 			// create the map markers and vision cone out of player sight for each crew position
 			createMarkerLocal [Seb_fnc_CrewVisionMap_gunnerMarkerName,[-10000,-10000,-10000]];
 			Seb_fnc_CrewVisionMap_gunnerMarkerName setMarkerTypeLocal "mil_destroy";
@@ -171,7 +171,7 @@ _vehicle addEventHandler ["GetIn", {
 					//value for map marker to interpolate to
 					_gunnerMarkerNew = Seb_fnc_CrewVisionMap_gunnerTargetPos;
 					
-					// updates cone at 25fps-ish by interpolating from old to new.
+					// updates cone at 24fps-ish by interpolating from old to new.
 					// i is 12 as 24 fps update rate, with a marker that changes pos twice per second.
 					for "_i" from 1 to 12 do {
 						// alpha is amount done of interpolation as a ratio of completed frames to total frames.
@@ -190,7 +190,7 @@ _vehicle addEventHandler ["GetIn", {
 						// sends mid-interpolation info to the draw handler
 						Seb_fnc_CrewVisionMap_gunnerCone = +Seb_fnc_CrewVisionMap_gunnerConeInterpTemp;	
 						
-						// sleep is 1/24, as i loop is 1/12+1 for something updating twice per second = 25fps interpolation
+						// sleep is 1/24, as i loop is 1/12+1 for something updating twice per second = 24fps interpolation
 						sleep 0.04;
 						
 					};
@@ -204,9 +204,19 @@ _vehicle addEventHandler ["GetIn", {
 				};
 				
 				
-				// checks if player has got out, exits while loop if true
+				// checks if player has got out, exits while loop if true and undeclares global variables.
 				if !(_unit in _parentVehicle) exitWith {			
 					deleteMarkerLocal Seb_fnc_CrewVisionMap_gunnerMarkerName;
+					
+					Seb_fnc_CrewVisionMap_gunnerMarkerName = nil;
+					Seb_fnc_CrewVisionMap_gunnerTargetPos = nil;
+					Seb_fnc_CrewVisionMap_gunnerFOV = nil;
+					Seb_fnc_CrewVisionMap_gunnerCone = nil;
+					Seb_fnc_CrewVisionMap_gunnerConeInterpTemp = nil;
+					Seb_fnc_CrewVisionMap_gunnerMarkerInterpolate = nil;
+					
+					// undeclared twice but idc lol
+					Seb_fnc_CrewVisionMap_BlankCone = nil;
 				};	
 			};
 		};
@@ -216,6 +226,12 @@ _vehicle addEventHandler ["GetIn", {
 		// This "spawn" handles logic for commander marker and cone updating
 		[_parentVehicle,_role,_unit,_turret] spawn {
 			params ["_parentVehicle", "_role", "_unit", "_turret"];
+			
+			// Gives unique marker name for gunner to be used for all instances of this script. Each instance will reuse this marker as required, as the player can't be in two vehicles at once this is no problem.
+			Seb_fnc_CrewVisionMap_commanderMarkerName = "Seb_fnc_CrewVisionMap_commanderMarker";
+			Seb_fnc_CrewVisionMap_commanderTargetPos = [0,0,0];
+			Seb_fnc_CrewVisionMap_commanderFOV = 90;
+			
 			// create the map markers and vision cone out of player sight for each crew position
 			createMarkerLocal [Seb_fnc_CrewVisionMap_commanderMarkerName,[-10000,-10000,-10000]];
 			Seb_fnc_CrewVisionMap_commanderMarkerName setMarkerTypeLocal "mil_box";
@@ -279,7 +295,7 @@ _vehicle addEventHandler ["GetIn", {
 					//value for map marker to interpolate to
 					_commanderMarkerNew = Seb_fnc_CrewVisionMap_commanderTargetPos;
 					
-					// updates cone at 25fps-ish by interpolating from old to new.
+					// updates cone at 24fps-ish by interpolating from old to new.
 					// i is 12 as 24 fps update rate, with a marker that changes pos twice per second.
 					for "_i" from 1 to 12 do {
 						// alpha is amount done of interpolation as a ratio of completed frames to total frames.
@@ -298,7 +314,7 @@ _vehicle addEventHandler ["GetIn", {
 						// sends mid-interpolation info to the draw handler
 						Seb_fnc_CrewVisionMap_commanderCone = +Seb_fnc_CrewVisionMap_commanderConeInterpTemp;	
 						
-						// sleep is 1/24, as i loop is 1/12+1 for something updating twice per second = 25fps interpolation
+						// sleep is 1/24, as i loop is 1/12+1 for something updating twice per second = 24fps interpolation
 						sleep 0.04;
 						
 					};
@@ -312,16 +328,26 @@ _vehicle addEventHandler ["GetIn", {
 				};
 				// END OF commander SECTION
 				
-				// checks if player has got out, exits while loop if true
+				// checks if player has got out, exits while loop if true and undeclares global variables.
 				if !(_unit in _parentVehicle) exitWith {			
 					deleteMarkerLocal Seb_fnc_CrewVisionMap_commanderMarkerName;
+					
+					Seb_fnc_CrewVisionMap_commanderMarkerName = nil;
+					Seb_fnc_CrewVisionMap_commanderTargetPos = nil;
+					Seb_fnc_CrewVisionMap_commanderFOV = nil;
+					Seb_fnc_CrewVisionMap_commanderCone = nil;
+					Seb_fnc_CrewVisionMap_commanderConeInterpTemp = nil;
+					Seb_fnc_CrewVisionMap_commanderMarkerInterpolate = nil;
+					
+					// undeclared twice but idc lol
+					Seb_fnc_CrewVisionMap_BlankCone = nil;
 				};	
 			};
 		};
 		// END OF commander SECTION
 		
 		
-		// spawns vision cone
+		// draws vision cone
 		[_parentVehicle,_role,_unit,_turret] spawn {
 			params ["_parentVehicle", "_role", "_unit", "_turret"];
 			disableSerialization;
@@ -336,7 +362,6 @@ _vehicle addEventHandler ["GetIn", {
 				// draws the actual cones
 				// Gunner
 				_control drawPolygon [Seb_fnc_CrewVisionMap_gunnerCone, [0,0,1,1]];
-				// _control drawEllipse [Seb_fnc_CrewVisionMap_gunnerMarkerInterpolate,25,25,0,[0,0,1,1],"#(rgb,8,8,3)color(0,0,1,0.5)"];
 				
 				// Commander
 				_control drawPolygon [Seb_fnc_CrewVisionMap_commanderCone, [0,1,0,1]];
