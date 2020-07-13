@@ -62,7 +62,7 @@ Seb_fnc_CrewVisionMap_BlankCone = [
 						
 					// declares gunnerTarget in case below returns null and therefore _gunnerTarget is not declared inside if statement which does not work
 					_gunnerTarget = [];
-					// gets x,y of where gunner is looking. Checks if intersecting objects are in the way are returns that object's pos if true. Error is that it will return centre of object not centre of intersect.
+					// gets x,y of where gunner is looking. Checks if intersecting objects are in the way and returns that intersection pos if true.
 					_gunnerTarget = (lineIntersectsSurfaces [eyepos Player,ATLToASL screenToWorld [0.5,0.5],player,vehicle player,true,1,"GEOM","VIEW"] select 0) select 0;
 					// for some reason the above can sometimes return nil when looking at terrain. This detects & fixes that. Luckily this returns what the above should.
 					if (isNil "_gunnerTarget") then {_gunnerTarget = screenToWorld [0.5,0.5];};
@@ -73,7 +73,7 @@ Seb_fnc_CrewVisionMap_BlankCone = [
 				};
 				
 				//COMMANDER: while loop for providing info to crew
-				// if player is gunner then broadcoast where they are looking to vehicle crew
+				// if player is commander then broadcoast where they are looking to vehicle crew
 				if (player ==  commander _parentVehicle) then {
 					//gets crew
 					_commanderClientTargets = crew _parentVehicle;
@@ -82,7 +82,7 @@ Seb_fnc_CrewVisionMap_BlankCone = [
 						
 					// declares commanderTarget in case below returns null and therefore _commanderTarget is not declared inside if statement which does not work
 					_commanderTarget = [];
-					// gets x,y of where commander is looking. Checks if intersecting objects are in the way are returns that object's pos if true. Error is that it will return centre of object not centre of intersect.
+					// gets x,y of where commander is looking. Checks if intersecting objects are in the way and returns that intersection pos if true.
 					_commanderTarget = (lineIntersectsSurfaces [eyepos Player,ATLToASL screenToWorld [0.5,0.5],player,vehicle player,true,1,"GEOM","VIEW"] select 0) select 0;
 					// for some reason the above can sometimes return nil when looking at terrain. This detects & fixes that. Luckily this returns what the above should.
 					if (isNil "_commanderTarget") then {_commanderTarget = screenToWorld [0.5,0.5];};
