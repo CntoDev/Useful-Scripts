@@ -15,8 +15,6 @@ To initialise for more than one vehicle, simply copy that same init code to the 
 This will only work if the vehicle has a "gunner" OR "commander" slot, or both. If it only has 1 of those that's fine, it's just pointless to use if these slots do not exist.
 
 Must be executed locally, do not wrap in ifServer.
-
-Does not work for the Blackfish.
 */
 
 if !(hasInterface) exitWith {};
