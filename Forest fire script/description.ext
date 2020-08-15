@@ -1,0 +1,10 @@
+class CfgFunctions
+{
+	class CNTO
+	{
+		class myCategory
+		{
+         class fireFunction {file = "Seb_fireFunction.sqf";};
+		};
+	};
+};
