@@ -22,7 +22,7 @@ Params:
 You may start multiple fires at once, however it will only use the parameters of the first fire. For example if you spawn one with a range of 650m, then one with 1000m, the second one will still used
 650m.
 */
-if (!isServer) exitWith {}
+if (!isServer) exitWith {};
 if (!canSuspend) exitWith {};
 params ["_startObj",["_distanceFromStart",1e39],["_maxBurningTrees",1e39],["_canBurnBuildings",false],["_spreadSpeed",2.5],["_fireSpreadDist",35],["_playerSpreadDist",650]];
 
@@ -78,7 +78,7 @@ private _spreadSleep = _fireSpreadDist/(_spreadSpeed*2);
 private _eligbleBurnObjects = [];
 
 //inversely proportional to radius of spread distance, this reduces the amount of objects checked as each tree has a objects overlap for less overhead.
-private _spreadDensityPercent = (250/(pi*(_fireSpreadDist*_fireSpreadDist)))*100;
+private _spreadDensityPercent = ((10/count _newLoopEligbleBurnObjects)*100);
 
 //while loop for fire spread. When no more objects are available to be burned, the script ends.
 while {count Seb_currentlyBurningObjects > 0} do {

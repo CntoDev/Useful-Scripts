@@ -16,7 +16,7 @@ private _particleSpeed = (random(0.5)+0.25);
 private _effectSize = (random(2)+4);
 private _orientation = (random(0.4)-0.2);
 private _damage = 1;
-private _damageRange = 35;
+private _damageRange = 25;
 
 // used for smoke
 
