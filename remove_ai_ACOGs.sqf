@@ -8,7 +8,7 @@ Place in init.sqf
 */
 ["CAManBase", "initPost", {
     private _man = _this#0;
-    if (!local _man or primaryWeapon _man == "") exitWith {};
+    if (!local _man or primaryWeapon _man == "" or _man in playableUnits) exitWith {};
     private _role = [configOf _man, "displayName"] call BIS_fnc_returnConfigEntry;
     if (["sniper","marksman","Sniper","Marksman"] findIf {_x in _role} != -1) exitWith {};
     private _optic = (primaryWeaponItems _man)#2;
