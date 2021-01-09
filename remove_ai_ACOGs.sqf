@@ -12,6 +12,7 @@ Place in init.sqf
     private _role = [configOf _man, "displayName"] call BIS_fnc_returnConfigEntry;
     if (["sniper","marksman","Sniper","Marksman"] findIf {_x in _role} != -1) exitWith {};
     private _optic = (primaryWeaponItems _man)#2;
+    if (_optic == "") exitWith {};
     private _opticCfg = (configfile >> "CfgWeapons" >> _optic >> "ItemInfo" >> "OpticsModes"); 
     private _opticVisionModes = [_opticCfg,2] call BIS_fnc_returnChildren; 
     private _opticVisionModeUseModelOptics = _opticVisionModes apply {getNumber (_x >> "useModelOptics")}; 
