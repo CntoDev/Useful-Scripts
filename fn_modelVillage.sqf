@@ -7,7 +7,7 @@ Params:
 Example = [table, "marker_0"] execVM fn_modelVillage;
 */
 
-params ["_table","_marker"];
+params ["_table","_marker",["_terrainResolution",20],["_scaleOverride", 1]];
 enableEnvironment false;
 _table enableSimulationGlobal false;
 private _tableObjects =  _table getVariable ["seb_tableobjects", []];
@@ -24,7 +24,7 @@ private _markerPos = getMarkerPos _marker;
 private _markerSize = getMarkerSize _marker;
 private _maxSize = _markerSize#0 max _markerSize#1; // longest edge of marker
 
-private _tableSize = (_tableWidth min _tableLength) / 2;    // Gets shortest edge of table    
+private _tableSize = ((_tableWidth min _tableLength) / 2) * _scaleOverride * 0.9;    // Gets shortest edge of table    
                                                             // Why do I have to divide by 2???????????????
 private _scale = _tableSize/_maxSize; // fit longest edge of marker on table
 
@@ -33,7 +33,6 @@ private _objects = (nearestTerrainObjects [_markerPos, [],  _squareDist, false, 
 private _roads = (_markerPos nearRoads _squareDist) inAreaArray _marker; // doesn't fucking work
 private _objects = _objects + _roads;
 
-private _vectorDiff = [0, 0, _tableHeight]; // neatly fit all the stuff on the top of the table
 
 
 private _dummy = createVehicle ["Land_HelipadEmpty_F", _markerPos, [], 0, "CAN_COLLIDE"];
@@ -41,47 +40,68 @@ _dummy enableSimulation false;
 _dummy setPosATL (getPosATL _dummy) vectorAdd [0, 0, 1];
 _dummy setDir (markerDir _marker);
 
+private _minHeight = 100000;
+{
+    _minHeight = _minHeight min (getPosASL _x)#2;
+} forEach _objects;
+private _zOffset = (getPosASL _dummy#2) - _minHeight;
+private _vectorDiff = [0, 0, _tableHeight/2 + (_zOffset * _scale)]; // neatly fit all the stuff on the top of the table
+
 {
     if !(_x isKindOf "Man") then {
-        private _relCentre = _dummy worldToModel (ASLtoAGL getPosASL _x);
-        private _relVectDir = _dummy vectorWorldToModel (vectorDir _x);
-        private _relVectUp = _dummy vectorWorldToModel (vectorUp _x);
         private _model = (getModelInfo _x)#1;
-        private _tableObj = createSimpleObject [_model, [0, 0, 0], false];
-        _tableObj setObjectScale _scale;
-        private _newPos = _relCentre vectorMultiply _scale;
-        _tableObj setPosASL AGLtoASL (_table modelToWorld (_newPos vectorAdd _vectorDiff));
-        _tableObj setVectorDir (_table vectorModelToWorld _relVectDir);
-        _tableObj setVectorUp (_table vectorModelToWorld _relVectUp);
-        _tableObj setObjectScale _scale;
-
-        _tableObjects pushBack _tableObj;
-        systemchat str (getPos _tableObj);
+        if (_model != "") then {
+            private _relCentre = _dummy worldToModel (ASLtoATL getPosWorld _x);
+            private _relVectDir = _dummy vectorWorldToModel (vectorDir _x);
+            private _relVectUp = _dummy vectorWorldToModel (vectorUp _x);
+            private _tableObj = createSimpleObject [_model, [0, 0, 0], false];
+            _tableObj setObjectScale _scale;
+            private _scaledPos = _relCentre vectorMultiply _scale;
+            private _newPos = (_table modelToWorldWorld (_scaledPos vectorAdd _vectorDiff));
+            _tableObj = [[typeOf _x, _model, 0], _newPos, 0, false, true] call BIS_fnc_createSimpleObject;
+            _tableObj setVectorDir (_table vectorModelToWorld _relVectDir);
+            //_tableObj setVectorUp (_table vectorModelToWorld _relVectUp);
+            _tableObj setObjectScale _scale;
+            _tableObjects pushBack _tableObj;
+        };
     };
 } forEach _objects;
 
-private _resolution = 20;
-private _step = 2/_resolution;
+private _step = 2/_terrainResolution;
+private _cubeSize = _step * _tableSize * 1.2; // Give cubes a little overlap
 for "_posX" from -1 to 1 step _step do {
     for "_posY" from -1 to 1 step _step do {
         private _tablePos = [_posX*_tableSize, _posY*_tableSize, 0];
         private _worldPos = (_dummy modelToWorld (_tablePos vectorMultiply 1/_scale)); // divide by scale to scale back up
-        _tablePos set [2, -(_worldPos#2 * _scale + _step)]; // Z flip? wtf?. Also offset by step = 1m cube length so top of cube is terrain height
-        
+        _tablePos set [2, -(_worldPos#2 * _scale + _cubeSize)]; // Z flip? wtf?. Also offset by _cubeOversize, which is normalised to 1 so moves cube down by its own length so top of cube is terrain
+
         private _texture = surfaceTexture _worldPos;
-        private _normal =  [surfaceNormal _worldPos, 180, 2] call BIS_fnc_rotateVector3D;
+        private _normals = [];
+        private _averageStep = _step/2;
+        for "_normalX" from -2*_averageStep to 2*_averageStep step _averageStep do {
+            for "_normalY" from -2*_averageStep to 2*_averageStep step _averageStep do {
+                private _checkPos = _worldPos vectorAdd [_normalX, _normalY];
+                _normals pushBack (surfaceNormal _checkPos);
+            };
+        };
+        private _normal = [0, 0, 0];
+        {
+            _normal = _normal vectorAdd _x;
+        } forEach _normals;
+        _normal = _normal vectorMultiply (1/count _normals - 1);
+        _normal = _normal vectorAdd vectorUp _table;
         private _groundObject =  createVehicle ["Land_VR_Shape_01_cube_1m_F", [0, 0, 0], [], 0, "CAN_COLLIDE"];
         _groundObject enableSimulation false;
-        _groundObject setObjectScale _step;
+        _groundObject setObjectScale _cubeSize;
         _groundObject setPosASL AGLtoASL (_table modelToWorld (_tablePos vectorAdd _vectorDiff));
-        _groundObject setVectorUp (_table vectorWorldToModel _normal);
+        _groundObject setVectorUp _normal;
+        _groundObject setVectorDir vectorDir _table;
         for "_selection" from 0 to 6 do {
             _groundObject setObjectMaterialGlobal [_selection, "\a3\data_f\default.rvmat"];
             _groundObject setObjectTextureGlobal [_selection, _texture];
         };
-        _groundObject setObjectScale _step;
+        _groundObject setObjectScale _cubeSize;
         _tableObjects pushBack _groundObject;
-        systemchat str ((getPos _groundObject)#2);
     };
 };
 
