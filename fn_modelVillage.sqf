@@ -1,3 +1,16 @@
+/*
+NEWER VERSION EXISTS HERE:
+https://github.com/Seb105/Arma-Briefingtable/tree/main/example_mission/SebsBriefingTableStandaloneDemo.Altis
+*/
+
+
+
+
+
+
+
+
+
 if (!isServer) exitWith {};
 /*
 How to use:
