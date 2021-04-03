@@ -1,5 +1,5 @@
 /*
-    spawns fire and smoke on the parent object, kills anyone that gets too close, and handles a little spread logic if it is the server.
+	spawns fire and smoke on the parent object, kills anyone that gets too close, and handles a little spread logic if it is the server.
 */
 
 //--- used for fire
@@ -38,30 +38,30 @@ private _smoke_height = ((boundingBox _object) select 2)*1.8;
 //--- fire particle effect creation
 private _emitter = "#particlesource" createVehicleLocal _pos;
 _emitter setParticleParams [
-    ["\A3\data_f\ParticleEffects\Universal\Universal",16,10,32],
-    "","billboard",1,_particleLifeTime,[0,0,0],
-    [0,0,0.4*_particleSpeed],
-    0,
-    0.0565,
-    0.05,
-    0.03,
-    [0.9*_particleSize,0],
-    [[1*_colorRed,1*_colorGreen,1*_colorBlue,-0],
-    [1*_colorRed,1*_colorGreen,1*_colorBlue,-1],
-    [1*_colorRed,1*_colorGreen,1*_colorBlue,-1],
-    [1*_colorRed,1*_colorGreen,1*_colorBlue,-1],
-    [1*_colorRed,1*_colorGreen,1*_colorBlue,-1],
-    [1*_colorRed,1*_colorGreen,1*_colorBlue,0]],
-    [1],
-    0.01,
-    0.02,
-    "",
-    "",
-    "",
-    _orientation,
-    false,
-    -1,
-    [[3,3,3,1]]
+	["\A3\data_f\ParticleEffects\Universal\Universal",16,10,32],
+	"","billboard",1,_particleLifeTime,[0,0,0],
+	[0,0,0.4*_particleSpeed],
+	0,
+	0.0565,
+	0.05,
+	0.03,
+	[0.9*_particleSize,0],
+	[[1*_colorRed,1*_colorGreen,1*_colorBlue,-0],
+	[1*_colorRed,1*_colorGreen,1*_colorBlue,-1],
+	[1*_colorRed,1*_colorGreen,1*_colorBlue,-1],
+	[1*_colorRed,1*_colorGreen,1*_colorBlue,-1],
+	[1*_colorRed,1*_colorGreen,1*_colorBlue,-1],
+	[1*_colorRed,1*_colorGreen,1*_colorBlue,0]],
+	[1],
+	0.01,
+	0.02,
+	"",
+	"",
+	"",
+	_orientation,
+	false,
+	-1,
+	[[3,3,3,1]]
 ];
 
 _emitter setParticleRandom [_particleLifeTime/4, [0.15*_effectSize,0.15*_effectSize,0],[0.2,0.2,0],0.4,0,[0,0,0,0],0,0,0.2];
@@ -90,24 +90,24 @@ _smoke setParticleParams [["\A3\data_f\ParticleEffects\Universal\Universal_02",8
  0.1, 0.08*_smoke_expansion, "", "", ""];
 
 _smoke setParticleRandom [_smoke_particleLifeTime/2, [0.5*_smoke_effectSize,0.5*_smoke_effectSize,0.2*_smoke_effectSize],
-[0.3,0.3,0.5],
-1, 0, [0,0,0,0.06],
-0, 0];
+ [0.3,0.3,0.5],
+ 1, 0, [0,0,0,0.06],
+ 0, 0];
 _smoke setDropInterval (1/_smoke_particleDensity);
 
 
 //--- light (you only need a few lights for it to looks good so there is 1 in 20 chance the light is spawned)
 private _light = "dummy";
 if (random(20)<1) then {
-    private _lightSize = (_particleSize + _effectSize)/2;
-    _light = "#lightpoint" createVehicleLocal _pos;
-    //_light setPos [_pos select 0,_pos select 1,(_pos select 2) + 0.5];
-    _light setLightBrightness 1.0;
-    _light setLightColor [1,0.65,0.4];
-    _light setLightAmbient [0.15,0.05,0];
-    _light setLightIntensity (50 + 100*_lightSize);
-    _light setLightAttenuation [35,0,0.5,0];
-    _light setLightDayLight true;
+	private _lightSize = (_particleSize + _effectSize)/2;
+	_light = "#lightpoint" createVehicleLocal _pos;
+	//_light setPos [_pos select 0,_pos select 1,(_pos select 2) + 0.5];
+	_light setLightBrightness 1.0;
+	_light setLightColor [1,0.65,0.4];
+	_light setLightAmbient [0.15,0.05,0];
+	_light setLightIntensity (50 + 100*_lightSize);
+	_light setLightAttenuation [35,0,0.5,0];
+	_light setLightDayLight true;
 };
 
 //--- timeout to delete fire & smoke
@@ -120,12 +120,12 @@ if !(_light isEqualTo "dummy") then {deleteVehicle _light;};
 
 //some stuff that only needs to be done serverside
 if (isServer) then {
-    // trees do not have a cfgType, therefore typeOf returns blank. Houses and buildings don't so if type is "" then destroy!
-    if (typeOf _object isEqualTo "") then {
-        _object hideObjectGlobal true;
-    } else {
-        _object setDamage 1;
-    };
-    // removes this tree from the currently burning trees array so it is no longer able to spread fire
-    Seb_currentlyBurningObjects deleteAt (Seb_currentlyBurningObjects find _object);
+	// trees do not have a cfgType, therefore typeOf returns blank. Houses and buildings don't so if type is "" then destroy!
+	if (typeOf _object isEqualTo "") then {
+		_object hideObjectGlobal true;
+	} else {
+		_object setDamage 1;
+	};
+	// removes this tree from the currently burning trees array so it is no longer able to spread fire
+	Seb_currentlyBurningObjects deleteAt (Seb_currentlyBurningObjects find _object);
 };
