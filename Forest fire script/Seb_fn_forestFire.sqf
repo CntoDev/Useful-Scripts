@@ -29,20 +29,20 @@ params ["_startObj",["_distanceFromStart",1e39],["_maxBurningTrees",1e39],["_can
 
 private _burnableObjectTypes = [];
 if (_canBurnBuildings) then {
-   _burnableObjectTypes = ["TREE","SMALL TREE","BUSH","HOUSE","FENCE","CHURCH","CHAPEL","TOURISM","BUSSTOP","FUELSTATION","BUILDING"];
+    _burnableObjectTypes = ["TREE","SMALL TREE","BUSH","HOUSE","FENCE","CHURCH","CHAPEL","TOURISM","BUSSTOP","FUELSTATION","BUILDING"];
 } else {
-   _burnableObjectTypes = ["TREE","SMALL TREE","BUSH"];
+    _burnableObjectTypes = ["TREE","SMALL TREE","BUSH"];
 };
 
 // Adds the centre of this fire to an array of fire centres, this is used to check distances to fire centres for the fire max range inside of a single while loop.
 if (isNil "Seb_fireCentres") then {
-   Seb_fireCentres = [];
+    Seb_fireCentres = [];
 };
 Seb_fireCentres pushBackUnique (getPos _startObj);
 
 
 if (isNil "Seb_burnedObjects") then{
-   Seb_burnedObjects = [];
+    Seb_burnedObjects = [];
 };
 
 // builds array of nearby burnable objects to start the while loop
@@ -50,27 +50,27 @@ private _newLoopEligbleBurnObjects = nearestTerrainObjects [_startObj,_burnableO
 
 // Creates an empty array of burning trees if there is not one already.
 if (isNil "Seb_currentlyBurningObjects") then {
-   Seb_currentlyBurningObjects = [];
+    Seb_currentlyBurningObjects = [];
 };
 
 
 // if Seb_currentlyBurningObjects is more than 0, then there is already a fire. Therefore, set the trees on fire, add them to the burning trees array,
 // then terminate this script and let the while loop of the existing fire handle the spread. This stops multiple while loops being necessary
 if (count Seb_currentlyBurningObjects > 0) exitWith {
-   sleep 1;
-   {
-         private _treeToBurn = _x;
-         _treeToBurn remoteExec ["CNTO_fnc_fireFunction"];
-         Seb_burnedObjects pushBackUnique _treeToBurn;
-         Seb_currentlyBurningObjects pushBackUnique _treeToBurn;
-   } forEach _newLoopEligbleBurnObjects;
+    sleep 1;
+    {
+        private _treeToBurn = _x;
+        _treeToBurn remoteExec ["CNTO_fnc_fireFunction"];
+        Seb_burnedObjects pushBackUnique _treeToBurn;
+        Seb_currentlyBurningObjects pushBackUnique _treeToBurn;
+    } forEach _newLoopEligbleBurnObjects;
 };
 
 {
-   private _treeToBurn = _x;
-   _treeToBurn remoteExec ["CNTO_fnc_fireFunction"];
-   Seb_burnedObjects pushBackUnique _treeToBurn;
-   Seb_currentlyBurningObjects pushBackUnique _treeToBurn;
+    private _treeToBurn = _x;
+    _treeToBurn remoteExec ["CNTO_fnc_fireFunction"];
+    Seb_burnedObjects pushBackUnique _treeToBurn;
+    Seb_currentlyBurningObjects pushBackUnique _treeToBurn;
 } forEach _newLoopEligbleBurnObjects;
 
 // time = distance/speed. Arbitrarily multiplied by two as it's slow af.
@@ -82,68 +82,45 @@ private _spreadDensityPercent = ((10/count _newLoopEligbleBurnObjects)*100);
 
 //while loop for fire spread. When no more objects are available to be burned, the script ends.
 while {count Seb_currentlyBurningObjects > 0} do {
+    private _startTime = time;
+    private _spreadChance = 25-(rain*23);
+    if (count Seb_currentlyBurningObjects < _maxBurningTrees) then {
+        private _newEligbleBurnObjects = [];
+        // private _startOfFireLoop = time;
+        {
+            private _treeToBurn = _x;
+            if ((count _eligbleBurnObjects) < 150 OR random(100)<_spreadChance) then {
+                _treeToBurn remoteExec ["CNTO_fnc_fireFunction"];
+                Seb_burnedObjects pushBackUnique _treeToBurn;
+                Seb_currentlyBurningObjects pushBackUnique _treeToBurn;
+            };
+        } forEach _eligbleBurnObjects;
+        // systemChat str ["1. BURNING TREES",(time - _startOfFireLoop)];
+        // private _timeStartOfNearbyTrees = time;
+        private _treesToCheck = Seb_currentlyBurningObjects select {
+            random(100)<_spreadDensityPercent
+            &&
+            { ((_x distance2D ([allPlayers,_x] call BIS_fnc_nearestPosition)) < _playerSpreadDist)
+            &&
+            ((_x distance2D ([Seb_fireCentres, _x] call BIS_fnc_nearestPosition)) < _distanceFromStart) }
+        };
+        {
+            private _nearbyTrees = (nearestTerrainObjects [_x,_burnableObjectTypes,_fireSpreadDist,false]);
+            {
+                _newEligbleBurnObjects pushBackUnique _x;
+            } forEach _nearbyTrees;
+        } forEach _treesToCheck;
+        // systemChat str ["2. NEW BURNING TREES",(time - _timeStartOfNearbyTrees),count _treesToCheck];
+        // private _timeStartOfTreeSelection = time;
+        _eligbleBurnObjects = _newEligbleBurnObjects select {!(_x in Seb_burnedObjects)};
+        // systemChat str ["3. FILTER BURNING TREES",(time - _timeStartOfTreeSelection)];
 
-   private _startTime = time;
+    };
+    // systemchat str [count Seb_currentlyBurningObjects,count _eligbleBurnObjects];
+    private _lag = time - _startTime;
+    sleep (_spreadSleep - _lag);
 
-   private _spreadChance = 25-(rain*23);
-   // if there are less than the burning trees threshold then do the burning tree loop. Skip if too many burning trees, will automatically start back up when possible.
-   if (count Seb_currentlyBurningObjects < _maxBurningTrees) then {
-      // makes buffer array blank for next loop
-      private _newEligbleBurnObjects = [];
-
-      // private _startOfFireLoop = time;
-
-      {
-         private _treeToBurn = _x;
-         if (
-               // Each tree has n x% chance of being able to spread fire next loop and only if it is within the specified parameters.
-               (count _eligbleBurnObjects) < 150 OR random(100)<_spreadChance
-            )
-            then {
-            // for each eligible burn object, set it on fire, also adds object to burned trees list
-            _treeToBurn remoteExec ["CNTO_fnc_fireFunction"];
-            // sets the burned tree var to true so that if this tree is checked by the nearby fire spread loop it is ignored.
-            Seb_burnedObjects pushBackUnique _treeToBurn;
-            //adds this tree to the burning tree array. When the tree dissapears it is removed from this array inside fireFunction.sqf
-            Seb_currentlyBurningObjects pushBackUnique _treeToBurn;
-         };
-      } forEach _eligbleBurnObjects;
-
-      // systemChat str ["1. BURNING TREES",(time - _startOfFireLoop)];
-      // private _timeStartOfNearbyTrees = time;
-
-      private _treesToCheck = Seb_currentlyBurningObjects select {
-         random(100)<_spreadDensityPercent
-         &&
-         { ((_x distance2D ([allPlayers,_x] call BIS_fnc_nearestPosition)) < _playerSpreadDist)
-         &&
-         ((_x distance2D ([Seb_fireCentres, _x] call BIS_fnc_nearestPosition)) < _distanceFromStart) }
-      };
-
-      {
-         // each tree on fire has a 1 in 10 chance of being checked to reduce lag
-         private _nearbyTrees = (nearestTerrainObjects [_x,_burnableObjectTypes,_fireSpreadDist,false]);
-         {
-            _newEligbleBurnObjects pushBackUnique _x;
-         } forEach _nearbyTrees;
-      } forEach _treesToCheck;
-
-      // systemChat str ["2. NEW BURNING TREES",(time - _timeStartOfNearbyTrees),count _treesToCheck];
-      // private _timeStartOfTreeSelection = time;
-
-      // An object is only added to the eligible burn objects array if it is not already burned
-      _eligbleBurnObjects = _newEligbleBurnObjects select {!(_x in Seb_burnedObjects)};
-
-      // systemChat str ["3. FILTER BURNING TREES",(time - _timeStartOfTreeSelection)];
-
-   };
-   // systemchat str [count Seb_currentlyBurningObjects,count _eligbleBurnObjects];
-
-   // SCRIPT LAG COMPENSATION
-   private _lag = time - _startTime;
-   sleep (_spreadSleep - _lag);
-
-   // systemChat str ["ActualVsTarget",(time - _startTime),_spreadSleep];
+    // systemChat str ["ActualVsTarget",(time - _startTime),_spreadSleep];
 
 };
 // systemChat "Forest Fire: Exited while loop";
