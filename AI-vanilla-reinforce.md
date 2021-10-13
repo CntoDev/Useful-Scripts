@@ -95,6 +95,10 @@ alerter_radius = 1000;
                 };
             };
 
+            if (speedMode _x != "FULL") then {
+                [_helpgrp, "FULL"] remoteExec ["setSpeedMode"];
+            };
+
             if (!(_x checkAIFeature "PATH") || !(_x checkAIFeature "MOVE") || _x isKindOf "StaticWeapon") then {
                 // stationary, just reveal
                 _helpgrp reveal _tgt;
