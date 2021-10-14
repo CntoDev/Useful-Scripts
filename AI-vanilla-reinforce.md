@@ -73,7 +73,8 @@ alerter_radius = 1000;
             if (side _leader != side _x) then { continue };
             if (!(behaviour _x in ["SAFE","AWARE","COMBAT"])) then { continue };
             // waypoints, but no CYCLE waypoint
-            if (count waypoints _helpgrp > 1 && {(waypoints _helpgrp) findIf { waypointType _x == "CYCLE" } == -1}) then { continue };
+            if (currentWaypoint _helpgrp < count waypoints _helpgrp && 
+                {(waypoints _helpgrp) findIf { waypointType _x == "CYCLE" } == -1}) then { continue };
 
             if (_x isKindOf "CAManBase") then {
                 // run all this only for a grp leader, if on foot
